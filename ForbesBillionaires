@@ -1,0 +1,63 @@
+import pyimgur
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
+import time
+import json
+
+data = []
+
+options = Options()
+#sometimes breaks when the headless option is used
+#options.add_argument("--headless")#remove this if you actually want to see Selenium do its thing
+
+startLink = "https://www.forbes.com/billionaires/#4d6efa43251c"
+driver = webdriver.Firefox(executable_path='/usr/local/bin/geckodriver', options=options)#add your path to your drivers
+driver.get(startLink)
+time.sleep(5)
+imageFile = 'billionaires.json'
+
+
+###This sometimes breaks the program, comment out to make work 
+### if commented out please be sure to click the "x" on the privacy notice or the program won't work correctly
+p = ".privacy-eu > div:nth-child(1) > img:nth-child(1s)"
+pi = driver.find_elements_by_css_selector(p)
+for y in pi:
+    y.click()
+#####
+for y in range(0,69):
+    print(str(y) + " okay")
+    if(y > 60):
+        for x in range(0,20):
+            name = ""
+            num = ""
+            image = ""
+            image = "li.overlay-item:nth-child("+str(x+1)+") > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)"
+            name = "li.overlay-item:nth-child("+str(x+1)+") > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > span:nth-child(1)"
+            l = driver.find_elements_by_css_selector(name)
+            xx = driver.find_elements_by_css_selector(image)
+            for x in l:
+                y = x.text.split(" ", 1)
+                num = y[0]
+                name = y[1]
+                print(y[0])
+            for x in xx:
+                s = x.value_of_css_property("background-image")
+                image = s[5:]
+                l = image.split("jpg")
+                print(l[0] + "jpg")
+                image = l[0] + "jpg"
+            if(str(image) != "https://thumbor.forbes.com/thumbor/400x0/https%3A%2F%2Fspecials-images.forbesimg.com%2Fimageserve%2F5ab944eda7ea432fbc1d2d9c%2F400x0.jpg" \
+                and str(image) != "https://thumbor.forbes.com/thumbor/400x0/https%3A%2F%2Fi.forbesimg.com%2Fmedia%2Flists%2Fpeople%2Fno-pic_416x416.jpg" \
+                    and str(image) != "https://thumbor.forbes.com/thumbor/400x0/https%3A%2F%2Fi.forbesimg.com%2Fmedia%2Flists%2Fpeople%2Fno-pic-female_416x416.jpg"):
+                data.append({
+                    'persistedFaceId' : "",
+                    'name': name,
+                    'image': image,
+                    'other': num
+                })
+    button = ".next"
+    link = driver.find_element_by_css_selector(button)
+    link.click()
+with open(imageFile, 'w') as outfile:
+    json.dump(data, outfile, indent=1)
